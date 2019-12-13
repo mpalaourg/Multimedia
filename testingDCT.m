@@ -27,7 +27,7 @@ for row = 1:8:RowNumber
         qBlock = quantizeJPEG(dctBlock, qTableL, qScale);
         
         runSymbols = runLength(qBlock, 60);
-
+        qBlock_run = irunLength(runSymbols, 60);
         de_dctBlock = dequantizeJPEG(qBlock, qTableL, qScale);
         fprintf('Quantize Error: %d\n', norm(dctBlock - de_dctBlock));
     end

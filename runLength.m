@@ -10,5 +10,13 @@ idx(:,1:2:end) = flipud(idx(:,1:2:end));        % Reverse order of odd columns
 idx(idx==0) = [];                               % Discard the zero - indexes
 qBlock = qBlock(idx);                           % Re-order array based on the ziz-zag indexes.
 
-runSymbols = 1; % To be removed
+runSymbols = [0 DC_coef]; precedingZeros = 0;
+for i=2:length(qBlock)
+    if qBlock(i) || i == length(qBlock)
+        runSymbols = [runSymbols; [precedingZeros qBlock(i)]];
+        precedingZeros = 0;
+    else
+        precedingZeros = precedingZeros + 1; 
+    end
+end
 end
