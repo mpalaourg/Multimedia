@@ -10,16 +10,16 @@ T = [0.299   0.587       0.114;
     -0.168736 -0.331264  0.5;
      0.5      -0.418688 -0.081312];
 %~ Get the individuals colors from the RGB image and transform to YCbCr ~%
-[RowNumber, ColumnNumber, ~] = size(imageRGB); imageY = zeros(RowNumber, ColumnNumber, 'uint8'); 
-imageCr = zeros(RowNumber, ColumnNumber, 'uint8'); imageCb = zeros(RowNumber, ColumnNumber, 'uint8');
-for i = 1:RowNumber
-    for j = 1:ColumnNumber
-        transformed = double([imageRGB(i,j,1) imageRGB(i,j,2) imageRGB(i,j,3)]) * T'  + [0 128 128];
-        imageY(i,j) = uint8(transformed(1,1));
-        imageCb(i,j) = uint8(transformed(1,2));
-        imageCr(i,j) = uint8(transformed(1,3)); 
-    end
-end
+[RowNumber, ColumnNumber, ~] = size(imageRGB); 
+red   = imageRGB(:,:,1); red   = red';   red = reshape(red,[],1); 
+green = imageRGB(:,:,2); green = green'; green = reshape(green,[],1);
+blue  = imageRGB(:,:,3); blue  = blue';  blue  = reshape(blue,[],1);
+    
+colours = [red green blue];
+transformed = double(colours) * T' + [0 128 128];
+imageY  = uint8(reshape(transformed(:,1), RowNumber, ColumnNumber)');
+imageCb = uint8(reshape(transformed(:,2), RowNumber, ColumnNumber)');
+imageCr = uint8(reshape(transformed(:,3), RowNumber, ColumnNumber)');
 %~ Sub-sampling according to subimg ~%
 if isequal(subimg, [4 4 4])
     return;

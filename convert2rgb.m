@@ -41,15 +41,15 @@ else
     error('Error. The provided subsampling rate doesnt exist.');
 end
 %~ From YCbCr transform to RGB ~%
-red = zeros(RowNumber, ColumnNumber, 'uint8'); green = zeros(RowNumber, ColumnNumber, 'uint8'); 
-blue = zeros(RowNumber, ColumnNumber, 'uint8');
-for i = 1:RowNumber
-    for j = 1:ColumnNumber
-        itransformed = (double([imageY(i,j) imageCb_rec(i,j) imageCr_rec(i,j)]) - [0 128 128]) * invT';
-        red(i,j)   = uint8(itransformed(1,1));
-        green(i,j) = uint8(itransformed(1,2));
-        blue(i,j)  = uint8(itransformed(1,3)); 
-    end
-end
+Y  = imageY';      Y = reshape(Y,[],1); 
+Cb = imageCb_rec'; Cb = reshape(Cb,[],1);
+Cr = imageCr_rec'; Cr  = reshape(Cr,[],1);    
+YCbCr = [Y Cb Cr];
+
+itransformed = (double(YCbCr) - [0 128 128]) * invT';
+red   = uint8(reshape(itransformed(:,1), RowNumber, ColumnNumber)');
+green = uint8(reshape(itransformed(:,2), RowNumber, ColumnNumber)');
+blue  = uint8(reshape(itransformed(:,3), RowNumber, ColumnNumber)');
+
 imageRGB(:,:,1) = red; imageRGB(:,:,2) = green; imageRGB(:,:,3) = blue;
 end

@@ -5,7 +5,13 @@ if ~isscalar(DCpred),     error('Error. 2nd argument {DCpred} must be scalar.');
 [RowNumber, ~] = size(runSymbols);
 qBlock(1,1) = runSymbols(1,2) + DCpred;
 for i = 2:RowNumber         % for each row, minus DC coefficient
-    qBlock = [qBlock [zeros(1, runSymbols(i,1)) runSymbols(i,2)]];
+    if isequal(runSymbols(i,:), [15 0])
+        qBlock = [qBlock zeros(1, runSymbols(i,1))];    % Place only the 15 zeros
+    elseif isequal(runSymbols(i,:), [0 0])
+        qBlock = [qBlock zeros(1, 64-length(qBlock))];  % The rest is zeros
+    else
+        qBlock = [qBlock [zeros(1, runSymbols(i,1)) runSymbols(i,2)]];
+    end
 end
 %~ Undo the ZigZag reorder ~%
 index_8 = zigZag(8) + 1;

@@ -1,3 +1,14 @@
+%%%
+%%% WRONG, I HAVE TO COMPUTE THE RIGHT DC VALUE 
+%%% runSymbols, is string at irunLength
+%%%
+%% load images and define qTable for Y and Cb/Cr %%
+load('img1_down.mat')
+%~ Make the image to be exactly for blocks 8x8, whithout leftovers ~%
+[N, M] = size(img1_down);
+N = mod(N, 8); M = mod(M, 8);
+img1_down = img1_down(1:end-N, 1:end-M, :);
+
 %~ Define qTable for Y and Cb/Cr ~%
 ISO_Tables;
 qTableL = [16 11 10 16 24 40 51 61;     12 12 14 19 26 58 60 55;
@@ -12,27 +23,83 @@ gTableC = [17 18 24 47 99 99 99 99;
            99 99 99 99 99 99 99 99;
            99 99 99 99 99 99 99 99;
            99 99 99 99 99 99 99 99];
-load('img1_down.mat')
-qScale = 0.6;
-%~ Make the image to be exactly for blocks 8x8, whithout leftovers ~%
-[N, M] = size(img1_down);
-N = mod(N, 8); M = mod(M, 8);
-img1_down = img1_down(1:end-N, 1:end-M, :); subimg = [4 4 4];
-[imageY, imageCb, imageCr] = convert2ycbcr(img1_down, subimg);
 %~ Create the blocks and apply the DCT transformation ~%
-[RowNumber, ColumnNumber] = size(img1_down);
+clear imageY imageCb imageCr
+clear imageY_rec imageCr_rec imageCb_rec
+subimg = [4 2 2]; qScale = 0.6;
+[imageY, imageCb, imageCr] = convert2ycbcr(img1_down, subimg);
+%~ For all the blocks compute DCT and quantize them.~%
+[RowNumber, ColumnNumber] = size(imageY);
+%~ For the Y component ~%
+DC_Pred = 1;
 for row = 1:8:RowNumber
     for column = 1:8:ColumnNumber
-        block = imageY(row:row+7, column:column+7);
-        dctBlock = blockDCT(block);
-        qBlock = quantizeJPEG(dctBlock, qTableL, qScale);
+        blockY  = imageY(row:row+7, column:column+7);
+        dctblockY  = blockDCT(blockY);
+        quantblockY  = quantizeJPEG(dctblockY, qTableL, qScale);
+        runSymbolsY = runLength(quantblockY, DC_Pred);
+        huffStreamY = huffEnc(runSymbolsY,  1); % isLuminance = 1 FOR Y
+%~ For all the quantized blocks compute idCT. ~%
+        myrunSymbols = huffDec(huffStreamY,1);  % isLuminance = 1 FOR Y
+        quantblockY = irunLength(double(myrunSymbols), DC_Pred);
+        de_quantblockY  = dequantizeJPEG(quantblockY, qTableL, qScale);
+        idctblockY  = iBlockDCT(de_quantblockY);
+        imageY_rec(row:row+7, column:column+7) = idctblockY;
         
-        runSymbols = runLength(qBlock, 60);
-        huffStream = huffEnc(runSymbols);
-        myrunSymbols = huffDec(huffStream);
-        max(runSymbols - myrunSymbols)
-        qBlock_run = irunLength(runSymbols, 60);
-        de_dctBlock = dequantizeJPEG(qBlock, qTableL, qScale);
-        fprintf('Quantize Error: %d\n', norm(dctBlock - de_dctBlock));
+     %DC_Pred = .. ;
+        %max(runSymbols - double(myrunSymbols))
+        %qBlock_run = irunLength(runSymbols, 60);
+        %max(max(qBlock - qBlock_run))
+        %de_dctBlock = dequantizeJPEG(qBlock, qTableL, qScale);
+        %fprintf('Quantize Error: %d\n', norm(dctBlock - de_dctBlock));
     end
 end
+
+[RowNumber, ColumnNumber] = size(imageCb);
+%~ For the Cb, Cr components ~%
+DC_PredCr = 1; DC_PredCb = 1;
+for row = 1:8:RowNumber
+    for column = 1:8:ColumnNumber
+        blockCr = imageCr(row:row+7, column:column+7);
+        blockCb = imageCb(row:row+7, column:column+7);
+        
+        dctblockCr = blockDCT(blockCr);
+        dctblockCb = blockDCT(blockCb);
+        
+        quantblockCr = quantizeJPEG(dctblockCr, gTableC, qScale);
+        quantblockCb = quantizeJPEG(dctblockCb, gTableC, qScale);
+        
+        runSymbolsCr = runLength(quantblockCr, DC_PredCr);
+        runSymbolsCb = runLength(quantblockCb, DC_PredCb);
+        
+        huffStreamCr = huffEnc(runSymbolsCr,  0); % isLuminance = 0 FOR Cr
+        huffStreamCb = huffEnc(runSymbolsCb,  0); % isLuminance = 0 FOR Cb
+%~ For all the quantized blocks compute idCT. ~%
+        myrunSymbolsCr = huffDec(huffStreamCr, 0);  % isLuminance = 0 FOR Cb
+        myrunSymbolsCb = huffDec(huffStreamCb, 0);  % isLuminance = 0 FOR Cb
+        
+        quantblockCr = irunLength(double(myrunSymbolsCr), DC_PredCr);
+        quantblockCb = irunLength(double(myrunSymbolsCb), DC_PredCb);
+        
+        de_quantblockCr  = dequantizeJPEG(quantblockCr, gTableC, qScale);
+        de_quantblockCb  = dequantizeJPEG(quantblockCb, gTableC, qScale);
+        
+        idctblockCr  = iBlockDCT(de_quantblockCr);
+        idctblockCb  = iBlockDCT(de_quantblockCb);
+        
+        imageCr_rec(row:row+7, column:column+7) = idctblockCr;
+        imageCb_rec(row:row+7, column:column+7) = idctblockCb;
+    end
+end
+
+%~ Reconstruct RGB image. ~%
+imageRGB = convert2rgb(imageY_rec, imageCr_rec, imageCb_rec, subimg);
+figure; 
+subplot(1,2,1)
+imshow(img1_down)
+title('Original Image', 'Interpreter', 'latex')
+subplot(1,2,2)
+imshow(imageRGB);
+title('Reconstructed Image - Subsampling 4:2:2 , qScale = 0.6', 'Interpreter', 'latex')
+figure(); image(img1_down - imageRGB);
+title('Quantization error', 'Interpreter', 'latex')
