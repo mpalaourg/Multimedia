@@ -16,7 +16,7 @@ for i=2:length(qBlock)
         runSymbols = [runSymbols; [precedingZeros qBlock(i)]];
         precedingZeros = 0;                         % Reset the procedure
     elseif i == length(qBlock)                      % EOB and qBlock(end) == 0
-        while ~runSymbols(end,2)                    % Check if [15 0] was inserted at the end
+        while isequal(runSymbols(end,:), [15 0])    % Check if [15 0] was inserted at the end
             runSymbols(end, :) = [];                % If that's the case, delete them to place [0 0]
         end
         runSymbols = [runSymbols; [0 0]];           % Remaining symbols is 0

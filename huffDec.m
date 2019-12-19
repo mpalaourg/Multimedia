@@ -1,5 +1,6 @@
 function runSymbols = huffDec(huffStream, isLuminance)
 if ~isscalar(isLuminance), error('Error. 2nd argument {isLuminance} must be scalar.'); end
+
 %getArrayFromByteStream(huffStream)
 global DC_Huff_L DC_Huff_C AC_Huff_L AC_Huff_C;
 if isLuminance
@@ -24,7 +25,7 @@ for i = 1:totalSize
             dcAdditionalValue = 0;                      % DC Value = 0, has zero additional Value
             endOfDC = i;
         end
-        runSymbols(1,:) = [0 dcAdditionalValue];
+        strSymbols(1,:) = [0 dcAdditionalValue];
         break;                                          % break from loop
     end
 end
@@ -34,19 +35,20 @@ while ( j < totalSize+1)
     currChar = strcat(char(currChar), huffStream(j));
     index = find(AC_Huff(:,4) == string(currChar));
     if index == 1 | index == 152                         % EOB OR [15 0]
-        runSymbols = [runSymbols; [AC_Huff(index,1) 0]]; 
+        strSymbols = [strSymbols; [AC_Huff(index,1) 0]]; 
         currChar = [];
     elseif index
         Category = hex2dec(AC_Huff(index,2));
         currChar = huffStream(j+1:j+Category);          % The additional Bits
         acAdditionalValue = getDecimal(currChar);
-        runSymbols = [runSymbols; [AC_Huff(index,1) acAdditionalValue]];
+        strSymbols = [strSymbols; [AC_Huff(index,1) acAdditionalValue]];
         j = j + length(currChar);                       % Go on to the next AC coeficient.
         currChar = [];
     end
     j = j + 1;
 end
-
+runSymbols(:,1) = hex2dec(strSymbols(:,1));
+runSymbols(:,2) = double(strSymbols(:,2));
 end
 function decValue = getDecimal(currChar)
 %~ Based on Category, invert the huffman code ~%
