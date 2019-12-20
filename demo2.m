@@ -19,7 +19,7 @@ load('img1_down.mat')
 N = mod(N, 8); M = mod(M, 8);
 img1_down = img1_down(1:end-N, 1:end-M, :);
     %~ For the Y component ~%
-subimg = [4 4 4]; qScale = 0.6;
+subimg = [4 2 2]; qScale = 0.6;
 [imageY, imageCb, imageCr] = convert2ycbcr(img1_down, subimg);
 [RowNumber, ColumnNumber] = size(imageY);
 allQuantY = []; allRunlengthY = [];
@@ -86,8 +86,8 @@ freqQuantY = accumarray(icQuantY, 1) / numel(allQuantY);
 freqQuantCb = accumarray(icQuantCb, 1) / numel(allQuantCb);
 freqQuantCr = accumarray(icQuantCr, 1) / numel(allQuantCr);
 %~ Entropy is -freq*log(freq) ~%
-entropyQuantAll = sum(-freqQuantY .* log2(freqQuantY)) + sum(-freqQuantCb .* log2(freqQuantCb)) + ...
-                      sum(-freqQuantCr .* log2(freqQuantCr));
+entropyQuantAll = sum(-freqQuantY .* log2(freqQuantY)) + sum(-freqQuantCb .* log2(freqQuantCb)) ...
+                  +sum(-freqQuantCr .* log2(freqQuantCr));
 fprintf('\nThe entropy for the Quantize DCT Coefficients is: %f.\n', entropyQuantAll);
 
 allQuants = [allQuantY allQuantCb allQuantCr];

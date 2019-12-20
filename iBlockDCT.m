@@ -1,3 +1,3 @@
 function block = iBlockDCT(dctBlock)
-    block = idct2(dctBlock) + 128;
+    block = idct2(dctBlock);
 end

@@ -1,9 +1,12 @@
+%function JPEGenc = JPEGencode(img, subimg, qScale, qTableL, qTableC)
 function JPEGenc = JPEGencode(img, subimg, qScale)
 if ndims(img) ~=3,                error('Error. 1st argument {img} must be a 3d matrix.'); end
 if ~isequal(size(subimg), [1 3]), error('Error. 2nd argument {subimg} must be a 1x3 vector.'); end
 if ~isscalar(qScale),             error('Error. 3rd argument {qScale} must be scalar.'); end
 %~ Create the tables needed ~%
 ISO_Tables;
+% TO CHANGE THE qTables, COMMENT THE BELOW OUT AND ADD TWO MORE INPUTS HERE
+
 qTableL = [16 11 10 16 24 40 51 61;     12 12 14 19 26 58 60 55;
            14 13 16 24 40 57 69 56;     14 17 22 29 51 87 80 62;
            18 22 37 56 68 109 103 77;   24 35 55 64 81 104 113 92;
@@ -16,6 +19,7 @@ qTableC = [17 18 24 47 99 99 99 99;
            99 99 99 99 99 99 99 99;
            99 99 99 99 99 99 99 99;
            99 99 99 99 99 99 99 99];
+global DC_Huff_L DC_Huff_C AC_Huff_L AC_Huff_C;
 DCL = cell(1,1); DCC = cell(1,1); ACL = cell(1,1); ACC = cell(1,1);
 DCL{1,1} = DC_Huff_L; DCC{1,1} = DC_Huff_C;
 ACL{1,1} = AC_Huff_L; ACC{1,1} = AC_Huff_C;
