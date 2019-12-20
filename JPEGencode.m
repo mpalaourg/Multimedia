@@ -3,7 +3,6 @@ if ndims(img) ~=3,                error('Error. 1st argument {img} must be a 3d 
 if ~isequal(size(subimg), [1 3]), error('Error. 2nd argument {subimg} must be a 1x3 vector.'); end
 if ~isscalar(qScale),             error('Error. 3rd argument {qScale} must be scalar.'); end
 %~ Create the tables needed ~%
-%~ Define qTable for Y and Cb/Cr ~%
 ISO_Tables;
 qTableL = [16 11 10 16 24 40 51 61;     12 12 14 19 26 58 60 55;
            14 13 16 24 40 57 69 56;     14 17 22 29 51 87 80 62;
@@ -34,9 +33,12 @@ clear imageY_rec imageCr_rec imageCb_rec
 JPEGenc{1,1} = tableStruct;
 %~ Create the rest of the cell ~%
 [RowNumber, ColumnNumber] = size(imageY);
-DC_PredY = 0;
+DC_PredY = 0; idxVer = 0;
 for row = 1:8:RowNumber
+    idxVer = idxVer + 1;
+    idxHor = 0;
     for column = 1:8:ColumnNumber
+        idxHor = idxHor + 1;
         blockY  = imageY(row:row+7, column:column+7);
         dctblockY  = blockDCT(blockY);
         quantblockY  = quantizeJPEG(dctblockY, qTableL, qScale);
@@ -46,15 +48,18 @@ for row = 1:8:RowNumber
 %~ Save the struct for the associated block ~%
         currStruct = struct;
         currStruct.blkType = "Y";
-        currStruct.indHor = column; currStruct.indVer = row;
+        currStruct.indHor = idxHor; currStruct.indVer = idxVer;
         currStruct.huffStream = huffStreamY;
         JPEGenc{end+1,1} = currStruct;
     end
 end
 [RowNumber, ColumnNumber] = size(imageCb);
-DC_PredCr = 0; DC_PredCb = 0;
+DC_PredCr = 0; DC_PredCb = 0; idxVer = 0;
 for row = 1:8:RowNumber
+    idxVer = idxVer + 1;
+    idxHor = 0;
     for column = 1:8:ColumnNumber
+        idxHor = idxHor + 1;
         blockCr = imageCr(row:row+7, column:column+7);
         blockCb = imageCb(row:row+7, column:column+7);
         
@@ -70,18 +75,18 @@ for row = 1:8:RowNumber
         huffStreamCr = huffEnc(runSymbolsCr,  0); % isLuminance = 0 FOR Cr
         huffStreamCb = huffEnc(runSymbolsCb,  0); % isLuminance = 0 FOR Cb
         
-        DC_PredCr = quantblockCb(1,1);            % For the next iteration
+        DC_PredCr = quantblockCr(1,1);            % For the next iteration
         DC_PredCb = quantblockCb(1,1);            % For the next iteration
 %~ Save the struct for the associated block ~%
         currStruct = struct;
         currStruct.blkType = "Cr";
-        currStruct.indHor = column; currStruct.indVer = row;
+        currStruct.indHor = idxHor; currStruct.indVer = idxVer;
         currStruct.huffStream = huffStreamCr;
         JPEGenc{end+1,1} = currStruct;
         
         currStruct = struct;
         currStruct.blkType = "Cb";
-        currStruct.indHor = column; currStruct.indVer = row;
+        currStruct.indHor = idxHor; currStruct.indVer = idxVer;
         currStruct.huffStream = huffStreamCb;
         JPEGenc{end+1,1} = currStruct;
     end
