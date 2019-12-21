@@ -20,6 +20,7 @@ qTableC = [17 18 24 47 99 99 99 99;
            99 99 99 99 99 99 99 99;
            99 99 99 99 99 99 99 99];
 global DC_Huff_L DC_Huff_C AC_Huff_L AC_Huff_C;
+
 DCL = cell(1,1); DCC = cell(1,1); ACL = cell(1,1); ACC = cell(1,1);
 DCL{1,1} = DC_Huff_L; DCC{1,1} = DC_Huff_C;
 ACL{1,1} = AC_Huff_L; ACC{1,1} = AC_Huff_C;
@@ -29,9 +30,8 @@ tableStruct.qTableL = qTableL;
 tableStruct.qTableC = qTableC;
 tableStruct.DCL = DCL; tableStruct.DCC = DCC;
 tableStruct.ACL = ACL; tableStruct.ACC = ACC;
+
 %~ Transform to YCbCr to begin the convertion ~%
-clear imageY imageCb imageCr
-clear imageY_rec imageCr_rec imageCb_rec
 [imageY, imageCb, imageCr] = convert2ycbcr(img, subimg);
 
 JPEGenc{1,1} = tableStruct;
@@ -47,8 +47,8 @@ for row = 1:8:RowNumber
         dctblockY  = blockDCT(blockY);
         quantblockY  = quantizeJPEG(dctblockY, qTableL, qScale);
         runSymbolsY = runLength(quantblockY, DC_PredY);
-        huffStreamY = huffEnc(runSymbolsY,  1); % isLuminance = 1 FOR Y
-        DC_PredY = quantblockY(1,1);            % For the next iteration
+        huffStreamY = huffEnc(runSymbolsY,  1);                 % isLuminance = 1 FOR Y
+        DC_PredY = quantblockY(1,1);                            % For the next iteration
 %~ Save the struct for the associated block ~%
         currStruct = struct;
         currStruct.blkType = "Y";

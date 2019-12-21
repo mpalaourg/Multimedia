@@ -47,12 +47,7 @@ for row = 1:8:RowNumber
         idctblockY  = iBlockDCT(de_quantblockY);
         imageY_rec(row:row+7, column:column+7) = idctblockY;
         
-     %DC_Pred = .. ;
-        %max(runSymbols - double(myrunSymbols))
-        %qBlock_run = irunLength(runSymbols, 60);
-        %max(max(qBlock - qBlock_run))
-        %de_dctBlock = dequantizeJPEG(qBlock, qTableL, qScale);
-        %fprintf('Quantize Error: %d\n', norm(dctBlock - de_dctBlock));
+        DC_Pred = quantblockY(1,1);
     end
 end
 disp("All good with Y")
@@ -92,6 +87,9 @@ for row = 1:8:RowNumber
         
         imageCr_rec(row:row+7, column:column+7) = idctblockCr;
         imageCb_rec(row:row+7, column:column+7) = idctblockCb;
+        
+        DC_PredCr = quantblockCr(1,1);
+        DC_PredCb = quantblockCb(1,1);
     end
 end
 disp("All good with Cb, Cr")

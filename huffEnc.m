@@ -23,31 +23,32 @@ DC_Magn = Category;
 dcAdditionalBits = getBinary(runSymbols(1,2), Category);
 
 %~ Category and Additional Bits for AC coefficients ~%
-AC_Magn = dec2hex(zeros(RowNumber-1, 1)); acAdditionalBits = string( zeros(RowNumber-1, 1));
+AC_Magn = zeros(RowNumber-1, 1); acAdditionalBits = string( zeros(RowNumber-1, 1));
 for j = 2:RowNumber
 % RunLengths [15 0] and [0 0] DOESNT HAVE any additional bits
     if isequal(runSymbols(j,:), [15 0]) || isequal(runSymbols(j,:), [0 0])
-        AC_Magn(j-1) = dec2hex(0);
+        AC_Magn(j-1) = 0;
         acAdditionalBits(j-1) = '';
     else
         Category = floor( log2( abs(runSymbols(j,2)) ) ) + 1; % Table F.2
-        AC_Magn(j-1) = dec2hex(Category);
+        AC_Magn(j-1) = Category;
         acAdditionalBits(j-1) = getBinary(runSymbols(j,2), Category);
     end
 end
+
 %~ Compute Huffman code of DC Coefficient ~%
-index = find(DC_Huff(:,1) == string(DC_Magn));
-if index
-    strHuff = strcat(char(strHuff), char(DC_Huff(index, 3)), char(dcAdditionalBits));
-end
+index = DC_Magn + 1;
+strHuff = strcat(char(strHuff), char(DC_Huff(index)), char(dcAdditionalBits));
+
 %~ Compute Huffman code of AC Coefficients ~%
 for i = 2:RowNumber
-    index = find(AC_Huff(:,1) == string(dec2hex(runSymbols(i,1))) & ...
-                 AC_Huff(:,2) == string(AC_Magn(i-1)));
-    if index
-        strHuff = strcat(char(strHuff), char(AC_Huff(index, 4)), char(acAdditionalBits(i-1)));
+    index = runSymbols(i,1) * 10 + AC_Magn(i-1) + 1;       % + 1 for the EOB
+    if runSymbols(i,1) == 15 
+        index = index + 1;                                          % + 1 for the ZRL    
     end
+    strHuff = strcat(char(strHuff), char(AC_Huff(index)), char(acAdditionalBits(i-1)));
 end
+
 %~ Transform huffman from char to bytestream (uint8) ~%
 remBits = mod(length(strHuff), 8);
 if remBits

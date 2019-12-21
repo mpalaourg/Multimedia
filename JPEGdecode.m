@@ -14,29 +14,29 @@ for i = 2:length(JPEGenc)
     idxVer = currStruct.indVer; idxHor = currStruct.indHor;
     switch currStruct.blkType
         case "Y"
-            myrunSymbolsY = huffDec(currStruct.huffStream, 1);  % isLuminance = 1 FOR Y
+            myrunSymbolsY = huffDec(currStruct.huffStream, 1);      % isLuminance = 1 FOR Y
             quantblockY = irunLength(myrunSymbolsY, DC_PredY);
             de_quantblockY  = dequantizeJPEG(quantblockY, qTableL, qScale);
             idctblockY  = iBlockDCT(de_quantblockY);
             row = (idxVer - 1) * 8 + 1; column = (idxHor - 1) * 8 + 1;
             imageY_rec(row:row+7, column:column+7) = idctblockY;
-            DC_PredY = quantblockY(1,1);            % For the next iteration
+            DC_PredY = quantblockY(1,1);                            % For the next iteration
         case "Cb"
-            myrunSymbolsCb = huffDec(currStruct.huffStream, 0);  % isLuminance = 0 FOR Cb
+            myrunSymbolsCb = huffDec(currStruct.huffStream, 0);     % isLuminance = 0 FOR Cb
             quantblockCb = irunLength(myrunSymbolsCb, DC_PredCb);
             de_quantblockCb  = dequantizeJPEG(quantblockCb, qTableC, qScale);
             idctblockCb  = iBlockDCT(de_quantblockCb);
             row = (idxVer - 1) * 8 + 1; column = (idxHor - 1) * 8 + 1;
             imageCb_rec(row:row+7, column:column+7) = idctblockCb;
-            DC_PredCb = quantblockCb(1,1);            % For the next iteration
+            DC_PredCb = quantblockCb(1,1);                          % For the next iteration
         case "Cr"
-            myrunSymbolsCr = huffDec(currStruct.huffStream, 0);  % isLuminance = 0 FOR Cb
+            myrunSymbolsCr = huffDec(currStruct.huffStream, 0);     % isLuminance = 0 FOR Cb
             quantblockCr = irunLength(myrunSymbolsCr, DC_PredCr);
             de_quantblockCr  = dequantizeJPEG(quantblockCr, qTableC, qScale);
             idctblockCr  = iBlockDCT(de_quantblockCr);
             row = (idxVer - 1) * 8 + 1; column = (idxHor - 1) * 8 + 1;
             imageCr_rec(row:row+7, column:column+7) = idctblockCr;
-            DC_PredCr = quantblockCr(1,1);            % For the next iteration
+            DC_PredCr = quantblockCr(1,1);                          % For the next iteration
     end
 end
 imgRec = convert2rgb(imageY_rec, imageCr_rec, imageCb_rec, subimg);
