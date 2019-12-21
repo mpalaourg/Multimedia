@@ -16,27 +16,19 @@ elseif isequal(subimg, [4 2 2])
     imageCb_rec(:,1:2:end) = imageCb;
     imageCr_rec(:,1:2:end) = imageCr;
 %~ Interpolation with nearest neighbor ~% (Each row, the previous pixel value)
-    for rows = 1:RowNumber
-        for columns = 1:2:ColumnNumber
-            imageCb_rec(rows, columns + 1) = imageCb_rec(rows, columns);
-            imageCr_rec(rows, columns + 1) = imageCr_rec(rows, columns);
-        end
-    end
+    imageCb_rec(:,2:2:end) = imageCb;
+    imageCr_rec(:,2:2:end) = imageCr;
 elseif isequal(subimg, [4 2 0])
     imageCb_rec(1:2:end,1:2:end) = imageCb;
     imageCr_rec(1:2:end,1:2:end) = imageCr;
     %~ Interpolation with nearest neighbor ~% (Moving window 2x2)
-    for rows = 1:2:RowNumber
-        for columns = 1:2:ColumnNumber
-            imageCb_rec(rows, columns + 1)     = imageCb_rec(rows, columns);
-            imageCb_rec(rows + 1, columns)     = imageCb_rec(rows, columns);
-            imageCb_rec(rows + 1, columns + 1) = imageCb_rec(rows, columns);
-            
-            imageCr_rec(rows, columns + 1)     = imageCr_rec(rows, columns);
-            imageCr_rec(rows + 1, columns)     = imageCr_rec(rows, columns);
-            imageCr_rec(rows + 1, columns + 1) = imageCr_rec(rows, columns);
-        end
-    end
+    imageCb_rec(1:2:end,2:2:end) = imageCb;     % Same row, next colum
+    imageCb_rec(2:2:end,1:2:end) = imageCb;     % next row, same colum
+    imageCb_rec(2:2:end,2:2:end) = imageCb;     % next row, next colum
+    
+    imageCr_rec(1:2:end,2:2:end) = imageCr;     % Same row, next colum
+    imageCr_rec(2:2:end,1:2:end) = imageCr;     % next row, same colum
+    imageCr_rec(2:2:end,2:2:end) = imageCr;     % next row, next colum
 else
     error('Error. The provided subsampling rate doesnt exist.');
 end

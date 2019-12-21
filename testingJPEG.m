@@ -6,7 +6,7 @@ load('img1_down.mat')
 N = mod(N, 8); M = mod(M, 8);
 img1_down = img1_down(1:end-N, 1:end-M, :);
 %%
-subimg = [4 2 0];
+subimg = [4 4 4];
 %qScale = [1 2 5 10]; 
 qScale = [0.1 0.3 0.6 1 2 5 10];
 MSE = zeros(length(qScale),1);
@@ -19,7 +19,8 @@ for i = 1:length(qScale)
     MSE(i) = sum((img1_down(:) - imgRec(:)) .^2) / numel(img1_down);
     for j = 2:length(JPEGenc)
        currStruct =  JPEGenc{j};
-       bitNumber(i) = bitNumber(i) + length(currStruct.huffStream);
+       %HuffStream, is ByteStream. So *8, to get the bit number
+       bitNumber(i) = bitNumber(i) + (length(currStruct.huffStream) * 8); 
     end
     figure();
     subplot(1,2,1)

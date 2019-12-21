@@ -10,18 +10,18 @@ else
     DC_Huff = DC_Huff_C;
     AC_Huff = AC_Huff_C;
 end
-[RowNumber, ~] = size(runSymbols); huffStream = [];
+[RowNumber, ~] = size(runSymbols); strHuff = [];
 %~ First, match the symbol with the 'Category' ~%
 % The symbol belongs to 'Category' when the following apply:
 %           -2^(Category) < Symbol < 2^(Category)
 %~ Category and Additional Bits for DC coefficient ~%
-for Category = 0:11
-    if runSymbols(1,2) > -2^Category && runSymbols(1,2) < 2^Category    % Table F.1
-        DC_Magn = Category;
-        dcAdditionalBits = getBinary(runSymbols(1,2), Category);
-        break;
-    end
+Category = 0;   % Category = 0, ONLY FOR Symbol = 0
+if runSymbols(1,2)
+    Category = floor( log2( abs(runSymbols(1,2)) ) ) + 1; % Table F.1
 end
+DC_Magn = Category;
+dcAdditionalBits = getBinary(runSymbols(1,2), Category);
+
 %~ Category and Additional Bits for AC coefficients ~%
 AC_Magn = dec2hex(zeros(RowNumber-1, 1)); acAdditionalBits = string( zeros(RowNumber-1, 1));
 for j = 2:RowNumber
@@ -30,29 +30,35 @@ for j = 2:RowNumber
         AC_Magn(j-1) = dec2hex(0);
         acAdditionalBits(j-1) = '';
     else
-        for Category = 1:10
-            if runSymbols(j,2) > -2^Category && runSymbols(j,2) < 2^Category % Table F.2
-                AC_Magn(j-1) = dec2hex(Category);
-                acAdditionalBits(j-1) = getBinary(runSymbols(j,2), Category);
-                break;
-            end
-        end
+        Category = floor( log2( abs(runSymbols(j,2)) ) ) + 1; % Table F.2
+        AC_Magn(j-1) = dec2hex(Category);
+        acAdditionalBits(j-1) = getBinary(runSymbols(j,2), Category);
     end
 end
 %~ Compute Huffman code of DC Coefficient ~%
 index = find(DC_Huff(:,1) == string(DC_Magn));
 if index
-    huffStream = strcat(char(huffStream), char(DC_Huff(index, 3)), char(dcAdditionalBits));
+    strHuff = strcat(char(strHuff), char(DC_Huff(index, 3)), char(dcAdditionalBits));
 end
 %~ Compute Huffman code of AC Coefficients ~%
 for i = 2:RowNumber
     index = find(AC_Huff(:,1) == string(dec2hex(runSymbols(i,1))) & ...
                  AC_Huff(:,2) == string(AC_Magn(i-1)));
     if index
-        huffStream = strcat(char(huffStream), char(AC_Huff(index, 4)), char(acAdditionalBits(i-1)));
+        strHuff = strcat(char(strHuff), char(AC_Huff(index, 4)), char(acAdditionalBits(i-1)));
     end
 end
-%getByteStreamFromArray(huffStream)
+%~ Transform huffman from char to bytestream (uint8) ~%
+remBits = mod(length(strHuff), 8);
+if remBits
+    addBits = string(ones(1,8-remBits));
+    strHuff = strcat(char(strHuff), char(strjoin(addBits(:), "")));
+end
+huffStream = uint8(zeros(1,length(strHuff)/8)); idx = 1;
+for i = 1:8:length(strHuff)
+   huffStream(idx) = bin2dec(strHuff(i:i+7));
+   idx = idx + 1;
+end
 end
 
 function binValue = getBinary(num, Category)
@@ -63,6 +69,6 @@ binValue = bitget(abs(num),Category:-1:1);
 if num < 0
     binValue = ~binValue;
 end
-binValue = string(binValue * 1);
+binValue = string(binValue * 1);        % Logical to int, then to string
 binValue = strjoin(binValue(:),"");
 end
