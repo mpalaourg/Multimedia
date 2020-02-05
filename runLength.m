@@ -6,13 +6,13 @@ function runSymbols = runLength(qBlock, DCpred)
 %return:
 %runSymbols: Matrix contain pairs of (precedingZeros, quantSymbol). [R-by-2]
 %
-%First, i handle the DC coefficient. The quantSymbol, is the difference
-%between the current DC value and the previous (DCpred) and the precedingZeros
-%are 0. Then, for the AC coefficients re-order qBlock according to ZigZag 
-%rule and count the zeros before a non-zero value (quantSymbol) appear. 
-%There are some special cases:
-% i)  No more than 15 consecutively zeros can be handled. (ZRL)
-% ii) If the last elements of qBlock are zero, runlength is [0 0]. (EOB)
+% First, i handle the DC coefficient. The quantSymbol, is the difference
+% between the current DC value and the previous (DCpred) and the precedingZeros
+% are 0. Then, for the AC coefficients re-order qBlock according to ZigZag 
+% rule and count the zeros before a non-zero value (quantSymbol) appear. 
+% There are some special cases:
+%  i)  No more than 16 consecutively zeros can be handled. (ZRL)
+%  ii) If the last elements of qBlock are zero, runlength is [0 0]. (EOB)
 %
 if ~isequal(size(qBlock), [8 8]), error('Error. 1st argument {qBlock} must be a 8x8 matrix.'); end
 if ~isscalar(DCpred),             error('Error. 2nd argument {DCpred} must be scalar.'); end
@@ -37,8 +37,8 @@ for i=2:length(qBlock)                              % For all the AC coefficient
         runSymbols = [runSymbols; [0 0]];           % Remaining symbols is 0
     else
         precedingZeros = precedingZeros + 1;        % Count the preceding zeros
-        if precedingZeros == 15                     % At 15, reset and add [15 0]
-            runSymbols = [runSymbols; [15 0]];      % Runlength supports only 15 consecutively zeros.
+        if precedingZeros == 16                     % At 16, reset and add [15 0]
+            runSymbols = [runSymbols; [15 0]];      % Runlength supports only 16 consecutively zeros.
             precedingZeros = 0;
         end
     end

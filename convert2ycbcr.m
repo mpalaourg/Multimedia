@@ -1,14 +1,28 @@
 function [imageY, imageCb, imageCr] = convert2ycbcr(imageRGB, subimg)
+%convert2ycbcr
+%Inputs:
+%imageRGB: The RGB image [uint-8 format].                     [M-by-N-by-3]
+%subimg: A vector that defines the subsampling.               [1-by-3]
+%return:
+%imageY: A matrix that contains the luminance of the image.
+%imageCb: A matrix that contains the (blue) chrominance of the image.
+%imageCr: A matrix that contains the (red) chrominance of the image.
+%
+% At first, check the validity of the inputs. Then, make sure that the
+% image is multiple of 16, so the 8x8 blocks can be perfect defined. For
+% each pixel [r g b], multiply it with matrix T to find the new elements of
+% Y, Cb, Cr. Finally, for a valid subsampling vector compute the appropriate matrixes.
+%
 if ndims(imageRGB) ~=3, error('Error. 1st argument {imageRGB} must be a 3d matrix.'); end
 if ~isequal(size(subimg), [1 3]), error('Error. 2nd argument {subimg} must be a 1x3 vector.'); end
 %~ Make the image to be exactly for blocks 8x8, whithout leftovers ~%
 [N, M] = size(imageRGB);
-N = mod(N, 8); M = mod(M, 8);
+N = mod(N, 16); M = mod(M, 16);
 imageRGB = imageRGB(1:end-N, 1:end-M, :);
 %~ Initialize matrix T, used for the transformation ~%
 T = [0.299   0.587       0.114;
-    -0.168736 -0.331264  0.5;
-     0.5      -0.418688 -0.081312];
+    -0.1687  -0.3313     0.5;
+     0.5     -0.4187    -0.0813];
 %~ Get the individuals colors from the RGB image and transform to YCbCr ~%
 [RowNumber, ColumnNumber, ~] = size(imageRGB); 
 red   = imageRGB(:,:,1); red   = red';   red = reshape(red,[],1); 

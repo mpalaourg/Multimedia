@@ -5,7 +5,7 @@ function qBlock = quantizeJPEG(dctBlock, qTable, qScale)
 %qTable: The quantization table.                                [8-by-8]
 %qScale: The scale of the quantization.                         [scalar]
 %return:
-%qBlock: The quantization symbols, of the DCT coefficients.    [8-by-8]
+%qBlock: The quantization symbols, of the DCT coefficients.     [8-by-8]
 %
 %The quantization symbols are the point wise division of:
 % DCT Coefficients

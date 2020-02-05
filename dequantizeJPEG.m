@@ -7,8 +7,8 @@ function dctBlock = dequantizeJPEG(qBlock, qTable, qScale)
 %return:
 %dctBlock: Block with the DCT coefficients.                    [8-by-8]
 %
-%To undo the quantization, the quantization symbols will be multiplied -point
-%wise- by (qScale * qTable), where qScale control the scale of the quantization.
+% To undo the quantization, the quantization symbols will be multiplied -point
+% wise- by (qScale * qTable), where qScale control the scale of the quantization.
 %               Quantization symbols .* (qScale * qTable)
 %
 

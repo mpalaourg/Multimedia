@@ -1,10 +1,23 @@
 function imageRGB = convert2rgb(imageY, imageCr, imageCb, subimg)
-
+%convert2rgb
+%Inputs:
+%imageY: A matrix that contains the luminance of the image.
+%imageCb: A matrix that contains the (blue) chrominance of the image.
+%imageCr: A matrix that contains the (red) chrominance of the image.
+%subimg: A vector that defines the subsampling.               [1-by-3]
+%return:
+%imageRGB: The RGB image [uint-8 format].                     [M-by-N-by-3]
+%
+% At first for a valid subsampling vector compute the missing values of the
+% matrixes. For the interpolation, the method of the nearest neighbor was
+% used. Finally, For each 'pixel' [y cb cr], multiply it with the inverse of
+% matrix T to find the [r g b] pixel values.
+%
 if ~isequal(size(subimg), [1 3]), error('Error. 4th argument {subimg} must be a 1x3 vector.'); end
 %~ Initialize matrix T, used for the transformation ~%
 T = [0.299   0.587       0.114;
-    -0.168736 -0.331264  0.5;
-     0.5      -0.418688 -0.081312];
+    -0.1687  -0.3313     0.5;
+     0.5     -0.4187    -0.0813];
 invT = inv(T);
 %~ Sub-sampling according to subimg ~%
 [RowNumber, ColumnNumber] = size(imageY); imageRGB = zeros(RowNumber, ColumnNumber, 3, 'uint8');

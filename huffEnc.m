@@ -1,4 +1,13 @@
 function huffStream = huffEnc(runSymbols, isLuminance)
+%huffEnc
+%Inputs:
+%runSymbols: Matrix contain pairs of (precedingZeros, quantSymbol). [R-by-2]
+%isLuminance: TO BE DELETED
+%return:
+%huffStream: A matrix of uint8 (bytes) contains the huffman code.
+%
+% Each step is explained later.
+%
 if ~ismatrix(runSymbols),  error('Error. 1st argument {runSymbols} must be a Rx2 matrix.'); end
 if ~isscalar(isLuminance), error('Error. 2nd argument {isLuminance} must be scalar.'); end
 
@@ -15,9 +24,9 @@ end
 % The symbol belongs to 'Category' when the following apply:
 %           -2^(Category) < Symbol < 2^(Category)
 %~ Category and Additional Bits for DC coefficient ~%
-Category = 0;   % Category = 0, ONLY FOR Symbol = 0
+Category = 0;                                               % Category = 0, ONLY FOR Symbol = 0
 if runSymbols(1,2)
-    Category = floor( log2( abs(runSymbols(1,2)) ) ) + 1; % Table F.1
+    Category = floor( log2( abs(runSymbols(1,2)) ) ) + 1;   % Table F.1
 end
 DC_Magn = Category;
 dcAdditionalBits = getBinary(runSymbols(1,2), Category);
@@ -44,11 +53,10 @@ strHuff = strcat(char(strHuff), char(DC_Huff(index)), char(dcAdditionalBits));
 for i = 2:RowNumber
     index = runSymbols(i,1) * 10 + AC_Magn(i-1) + 1;       % + 1 for the EOB
     if runSymbols(i,1) == 15 
-        index = index + 1;                                          % + 1 for the ZRL    
+        index = index + 1;                                 % + 1 for the ZRL    
     end
     strHuff = strcat(char(strHuff), char(AC_Huff(index)), char(acAdditionalBits(i-1)));
 end
-
 %~ Transform huffman from char to bytestream (uint8) ~%
 remBits = mod(length(strHuff), 8);
 if remBits
@@ -68,8 +76,8 @@ if ~Category, binValue = 0; return; end % IF category = 0, then binary value is 
 
 binValue = bitget(abs(num),Category:-1:1);
 if num < 0
-    binValue = ~binValue;
+    binValue = ~binValue;               % For negative values, compute the 1's complement.
 end
-binValue = string(binValue * 1);        % Logical to int, then to string
-binValue = strjoin(binValue(:),"");
+binValue = string(binValue * 1);        % Logical to int, then to string.
+binValue = strjoin(binValue(:),"");     % Concat the string.
 end
