@@ -1,4 +1,5 @@
 %% load images and define qTable for Y and Cb/Cr %%
+clear all; close all; clc
 load('img1_down.mat')
 %~ Make the image to be exactly for blocks 8x8, whithout leftovers ~%
 [N, M, ~] = size(img1_down); N = mod(N, 16); M = mod(M, 16);

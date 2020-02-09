@@ -1,13 +1,32 @@
 function JPEGenc = JPEGencode(img, subimg, qScale)
+%JPEGencode
+%Inputs:
+%img: The RGB image [uint-8 format].                     [M-by-N-by-3]
+%subimg: A vector that defines the subsampling.          [1-by-3]
+%qScale: The scale of the quantization.                  [scalar]
+%return:
+%JPEGenc: A cell array that contains the encoded blocks. [N-by-1]
+%
+% At first, check the validity of the inputs. Then, make sure that the
+% quantization tables aren't empty. The first cell of JPEGenc has the
+% technical information for the encoding (qTables and Huffman Tables). The
+% next N cells contains the encoded blocks of the image. The block of Y
+% will be encoded in a seperate loop from Cb, Cr, cause of the (possible)
+% different size. Finally, for subimg = [4 2 0], the encoding sequence
+% change for Y blocks. If that's the case we create a indexing in form Z,
+% to encode the Y blocks (Cb and Cr wont be affected). Otherwise, the indexing
+% Y is sequential.
+%
 if ndims(img) ~=3,                error('Error. 1st argument {img} must be a 3d matrix.'); end
 if ~isequal(size(subimg), [1 3]), error('Error. 2nd argument {subimg} must be a 1x3 vector.'); end
 if ~isscalar(qScale),             error('Error. 3rd argument {qScale} must be scalar.'); end
 %~ Create the tables needed ~%
 ISO_Tables;
 global qTableL qTableC;
-%[qTableL, qTableC] = changedTables(0);
-global DC_Huff_L DC_Huff_C AC_Huff_L AC_Huff_C;
-
+if isempty(qTableL)
+ [qTableL, qTableC] = changedTables(0);
+end
+global DC_Huff_L DC_Huff_C AC_Huff_L AC_Huff_C isLuminance;
 DCL = cell(1,1); DCC = cell(1,1); ACL = cell(1,1); ACC = cell(1,1);
 DCL{1,1} = DC_Huff_L; DCC{1,1} = DC_Huff_C;
 ACL{1,1} = AC_Huff_L; ACC{1,1} = AC_Huff_C;
@@ -55,8 +74,9 @@ for i = 1:length(y_index)
         dctblockY  = blockDCT(blockY);
         quantblockY  = quantizeJPEG(dctblockY, qTableL, qScale);
         runSymbolsY = runLength(quantblockY, DC_PredY);
-        huffStreamY = huffEnc(runSymbolsY,  1);                 % isLuminance = 1 FOR Y
-        DC_PredY = quantblockY(1,1);                            % For the next iteration
+        isLuminance = 1;
+        huffStreamY = huffEnc(runSymbolsY);                 % isLuminance = 1 FOR Y
+        DC_PredY = quantblockY(1,1);                        % For the next iteration
 %~ Save the struct for the associated block ~%
         currStruct = struct;
         currStruct.blkType = "Y";
@@ -83,9 +103,9 @@ for row = 1:8:RowNumber
         
         runSymbolsCr = runLength(quantblockCr, DC_PredCr);
         runSymbolsCb = runLength(quantblockCb, DC_PredCb);
-        
-        huffStreamCr = huffEnc(runSymbolsCr,  0); % isLuminance = 0 FOR Cr
-        huffStreamCb = huffEnc(runSymbolsCb,  0); % isLuminance = 0 FOR Cb
+        isLuminance = 0;
+        huffStreamCr = huffEnc(runSymbolsCr); % isLuminance = 0 FOR Cr
+        huffStreamCb = huffEnc(runSymbolsCb); % isLuminance = 0 FOR Cb
         
         DC_PredCr = quantblockCr(1,1);            % For the next iteration
         DC_PredCb = quantblockCb(1,1);            % For the next iteration

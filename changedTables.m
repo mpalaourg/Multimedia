@@ -1,4 +1,16 @@
 function [qTableL, qTableC] = changedTables(num)
+%changedTables
+%Inputs:
+%num: A scalar showing the number of High Frequency Coefficients to be zeroed.
+%return:
+%qTableL: The altered luminance table of quantization.
+%qTableC: The altered chrominance table of quantization.
+%
+% At first, define the original tables from the protocol. If num = 0, then
+% the original tables will be returned. Otherwise, replace the num last
+% values of the tables with value 1000.
+%
+
 %~ Change qTableL, qTableC ~%
 qTableL = [16 11 10 16 24 40 51 61;     12 12 14 19 26 58 60 55;
            14 13 16 24 40 57 69 56;     14 17 22 29 51 87 80 62;

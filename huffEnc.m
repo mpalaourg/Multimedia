@@ -1,17 +1,15 @@
-function huffStream = huffEnc(runSymbols, isLuminance)
+function huffStream = huffEnc(runSymbols)
 %huffEnc
 %Inputs:
 %runSymbols: Matrix contain pairs of (precedingZeros, quantSymbol). [R-by-2]
-%isLuminance: TO BE DELETED
 %return:
 %huffStream: A matrix of uint8 (bytes) contains the huffman code.
 %
 % Each step is explained later.
 %
-if ~ismatrix(runSymbols),  error('Error. 1st argument {runSymbols} must be a Rx2 matrix.'); end
-if ~isscalar(isLuminance), error('Error. 2nd argument {isLuminance} must be scalar.'); end
+if ~ismatrix(runSymbols),  error('Error. The argument {runSymbols} must be a Rx2 matrix.'); end
 
-global DC_Huff_L DC_Huff_C AC_Huff_L AC_Huff_C;
+global DC_Huff_L DC_Huff_C AC_Huff_L AC_Huff_C isLuminance;
 if isLuminance
     DC_Huff = DC_Huff_L;
     AC_Huff = AC_Huff_L;

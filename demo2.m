@@ -1,5 +1,5 @@
 %% load images and define qTable for Y and Cb/Cr %%
-clear all; clc
+clear all; close all; clc
 ISO_Tables
 load('img1_down.mat')
 %~ Make the image to be exactly for blocks 8x8, whithout leftovers ~%

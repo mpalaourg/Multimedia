@@ -52,9 +52,9 @@ Cr = imageCr_rec'; Cr  = reshape(Cr,[],1);
 YCbCr = [Y Cb Cr];
 
 itransformed = (double(YCbCr) - [0 128 128]) * invT';
-red   = uint8(reshape(itransformed(:,1), RowNumber, ColumnNumber)');
-green = uint8(reshape(itransformed(:,2), RowNumber, ColumnNumber)');
-blue  = uint8(reshape(itransformed(:,3), RowNumber, ColumnNumber)');
+red   = uint8(reshape(itransformed(:,1), ColumnNumber, RowNumber)'); %'
+green = uint8(reshape(itransformed(:,2), ColumnNumber, RowNumber)'); %'
+blue  = uint8(reshape(itransformed(:,3), ColumnNumber, RowNumber)'); %'
 
 imageRGB(:,:,1) = red; imageRGB(:,:,2) = green; imageRGB(:,:,3) = blue;
 end

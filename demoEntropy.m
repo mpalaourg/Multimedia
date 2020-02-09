@@ -1,5 +1,5 @@
 %% load images and define qTable for Y and Cb/Cr %%
-clear all; clc
+clear all; close all; clc
 subimg = cell(1,3);
 subimg{1} = [4 4 4]; subimg{2} = [4 2 2]; subimg{3} = [4 2 0];
 qScale = [0.1 0.3 0.6 1 2 5 10];

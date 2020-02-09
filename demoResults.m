@@ -1,4 +1,4 @@
-clear all; clc
+clear all; close all; clc
 %% load images and define Huffman Tables%%
 load('img1_down.mat')
 %~ Make the image to be exactly for blocks 8x8, whithout leftovers ~%
@@ -18,7 +18,6 @@ num = [20 40 50 60 63];
 tStart = tic;
 subimg = [4 4 4]; qScale = 1;
 for i = 1:length(num)       % At each loop, zero the last num(i) High Frequency Coefficients
-    tic
     [qTableL, qTableC] = changedTables(num(i));
     JPEGenc = JPEGencode(img1_down, subimg, qScale);
     imgRec = JPEGdecode(JPEGenc);
@@ -30,12 +29,11 @@ for i = 1:length(num)       % At each loop, zero the last num(i) High Frequency 
     imshow(imgRec);
     title_str = ['Reconstructed Image - Zeroing the last ', num2str(num(i)), ' High Frequency Coefficients.'];
     title(title_str, 'Interpreter', 'latex')
-    toc
+    fprintf('[First Image] - Done zeroing the last %d High Frequency Coefficients.\n', num(i));
 end
 %% Image 2 ~ Changed Quantize Tables %%
 subimg = [4 4 4]; qScale = 1;
 for i = 1:length(num)       % At each loop, zero the last num(i) High Frequency Coefficients
-    tic
     [qTableL, qTableC] = changedTables(num(i));
     JPEGenc = JPEGencode(img2_down, subimg, qScale);
     imgRec = JPEGdecode(JPEGenc);
@@ -47,7 +45,7 @@ for i = 1:length(num)       % At each loop, zero the last num(i) High Frequency 
     imshow(imgRec);
     title_str = ['Reconstructed Image - Zeroing the last ', num2str(num(i)), ' High Frequency Coefficients.'];
     title(title_str, 'Interpreter', 'latex')
-    toc
+    fprintf('[Second Image] - Done zeroing the last %d High Frequency Coefficients.\n', num(i));
 end
 %% Image 1 ~ Statistics (MSE, Number of bits) %%
 [qTableL, qTableC] = changedTables(0);
@@ -55,19 +53,18 @@ subimg = [4 2 2];
 qScale = [0.1 0.3 0.6 1 2 5 10]; 
 MSE = zeros(length(qScale),1);
 bitNumber = zeros(length(qScale),1);
+compressRatio = zeros(length(qScale),1);
 for i = 1:length(qScale)
-    tic
     JPEGenc = JPEGencode(img1_down, subimg, qScale(i));
     imgRec = JPEGdecode(JPEGenc);
-    toc
     MSE(i) = sum((img1_down(:) - imgRec(:)) .^2) / numel(img1_down);
     for j = 2:length(JPEGenc)
        currStruct =  JPEGenc{j};
        % HuffStream, is ByteStream. So *8, to get the bit number
        bitNumber(i) = bitNumber(i) + (length(currStruct.huffStream) * 8);
-       % Compression rate
     end
-    
+    % Compression rate
+    compressRatio(i) = (numel(img1_down) * 8) / bitNumber(i);
     figure();
     subplot(1,3,1)
     imshow(img1_down)
@@ -80,12 +77,20 @@ for i = 1:length(qScale)
     subplot(1,3,3)
     imshow(img1_down - imgRec);
     title('Error on reconstruction', 'Interpreter', 'latex')
+    fprintf('[First Image] - Done computing results for qScale = %.1f.\n', qScale(i));
 end
 figure();
 plot(qScale, MSE, '-o')
 title('First Image - Mean Square Error', 'Interpreter', 'latex')
 xticks(qScale(:))
 xlabel('qScale', 'Interpreter', 'latex'); ylabel('MSE', 'Interpreter', 'latex')
+grid on
+
+figure();
+plot(qScale, compressRatio, '-o')
+title('First Image - Compression Ratio', 'Interpreter', 'latex')
+xticks(qScale(:))
+xlabel('qScale', 'Interpreter', 'latex'); ylabel('Compression Ratio', 'Interpreter', 'latex')
 grid on
 
 figure();
@@ -107,18 +112,17 @@ subimg = [4 4 4];
 qScale = [0.1 0.3 0.6 1 2 5 10];  
 MSE = zeros(length(qScale),1);
 bitNumber = zeros(length(qScale),1);
+compressRatio = zeros(length(qScale),1);
 for i = 1:length(qScale)
-    tic
     JPEGenc = JPEGencode(img2_down, subimg, qScale(i));
     imgRec = JPEGdecode(JPEGenc);
-    toc
     MSE(i) = sum((img2_down(:) - imgRec(:)) .^2) / numel(img2_down);
     for j = 2:length(JPEGenc)
        currStruct =  JPEGenc{j};
        %HuffStream, is ByteStream. So *8, to get the bit number
-       bitNumber(i) = bitNumber(i) + (length(currStruct.huffStream) * 8); 
+       bitNumber(i) = bitNumber(i) + (length(currStruct.huffStream) * 8);
     end
-    
+    compressRatio(i) = (numel(img2_down) * 8) / bitNumber(i);
     figure();
     subplot(1,3,1)
     imshow(img2_down)
@@ -131,12 +135,20 @@ for i = 1:length(qScale)
     subplot(1,3,3)
     imshow(img2_down - imgRec);
     title('Error on reconstruction', 'Interpreter', 'latex')
+    fprintf('[Second Image] - Done computing results for qScale = %.1f.\n', qScale(i));
 end
 figure();
 plot(qScale, MSE, '-o')
 title('Second Image - Mean Square Error', 'Interpreter', 'latex')
 xticks(qScale(:))
 xlabel('qScale', 'Interpreter', 'latex'); ylabel('MSE', 'Interpreter', 'latex')
+grid on
+
+figure();
+plot(qScale, compressRatio, '-o')
+title('Second Image - Compression Ratio', 'Interpreter', 'latex')
+xticks(qScale(:))
+xlabel('qScale', 'Interpreter', 'latex'); ylabel('Compression Ratio', 'Interpreter', 'latex')
 grid on
 
 figure();
@@ -152,4 +164,4 @@ title('Second Image - Mean Square Error and Number of bits', 'Interpreter', 'lat
 xlabel('Number of bits', 'Interpreter', 'latex'); ylabel('MSE', 'Interpreter', 'latex');
 grid on
 tEnd = toc(tStart)
-% Elapsed time: tEnd = 558.6757 sec 
+% Elapsed time: tEnd = 619.2475 sec 

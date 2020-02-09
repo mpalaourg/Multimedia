@@ -16,7 +16,7 @@ function [imageY, imageCb, imageCr] = convert2ycbcr(imageRGB, subimg)
 if ndims(imageRGB) ~=3, error('Error. 1st argument {imageRGB} must be a 3d matrix.'); end
 if ~isequal(size(subimg), [1 3]), error('Error. 2nd argument {subimg} must be a 1x3 vector.'); end
 %~ Make the image to be exactly for blocks 8x8, whithout leftovers ~%
-[N, M] = size(imageRGB);
+[N, M, ~] = size(imageRGB);
 N = mod(N, 16); M = mod(M, 16);
 imageRGB = imageRGB(1:end-N, 1:end-M, :);
 %~ Initialize matrix T, used for the transformation ~%
@@ -31,9 +31,9 @@ blue  = imageRGB(:,:,3); blue  = blue';  blue  = reshape(blue,[],1);
     
 colours = [red green blue];
 transformed = double(colours) * T' + [0 128 128];
-imageY  = uint8(reshape(transformed(:,1), RowNumber, ColumnNumber)');
-imageCb = uint8(reshape(transformed(:,2), RowNumber, ColumnNumber)');
-imageCr = uint8(reshape(transformed(:,3), RowNumber, ColumnNumber)');
+imageY  = uint8(reshape(transformed(:,1), ColumnNumber, RowNumber)'); %'
+imageCb = uint8(reshape(transformed(:,2), ColumnNumber, RowNumber)'); %'
+imageCr = uint8(reshape(transformed(:,3), ColumnNumber, RowNumber)'); %'
 %~ Sub-sampling according to subimg ~%
 if isequal(subimg, [4 4 4])
     return;

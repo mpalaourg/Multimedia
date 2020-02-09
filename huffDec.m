@@ -1,21 +1,19 @@
-function runSymbols = huffDec(huffStream, isLuminance)
+function runSymbols = huffDec(huffStream)
 %huffEnc
 %Inputs:
 %huffStream: A matrix of uint8 (bytes) contains the huffman code.
-%isLuminance: TO BE DELETED
 %return:
 %runSymbols: Matrix contain pairs of (precedingZeros, quantSymbol). [R-by-2]
 %
 % Each step is explained later.
 %
-if ~isscalar(isLuminance), error('Error. 2nd argument {isLuminance} must be scalar.'); end
 %~ Transform from bytestream to char ~%
 strHuff = [];
 for i = 1:length(huffStream)
     currBin = bitget(huffStream(i), 8:-1:1);
     strHuff = strcat(char(strHuff), char(strjoin(string(currBin(:)),"")));
 end
-global DC_Huff_L DC_Huff_C AC_Huff_L AC_Huff_C;
+global DC_Huff_L DC_Huff_C AC_Huff_L AC_Huff_C isLuminance;
 if isLuminance
     DC_Huff = DC_Huff_L;
     AC_Huff = AC_Huff_L;
